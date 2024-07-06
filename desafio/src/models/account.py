@@ -1,19 +1,12 @@
 import sqlalchemy as sa
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import db
+from src.database import metadata
 
-
-class Account(db.Model):
-    __tablename__ = "account"
-
-    id: Mapped[int] = mapped_column(sa.Integer, primary_key=True)
-    agency: Mapped[str] = mapped_column(sa.String(4))
-    account_number: Mapped[str] = mapped_column(sa.String(10), unique=True)
-    active: Mapped[bool] = mapped_column(sa.Boolean, default=True)
-    user_id: Mapped[int] = mapped_column(sa.ForeignKey("user.id"), unique=True)
-
-    user: Mapped["User"] = relationship(back_populates="account")  # type: ignore  # noqa: F821
-
-    def __repr__(self) -> str:
-        return f"Account(id={self.id!r}, agency={self.agency!r}, account_number={self.account_number!r})"
+accounts = sa.Table(
+    "accounts",
+    metadata,
+    sa.Column("id", sa.Integer, primary_key=True),
+    sa.Column("user_id", sa.Integer, nullable=False, index=True),
+    sa.Column("balance", sa.Numeric(10, 2), nullable=False, default=0),
+    sa.Column("created_at", sa.TIMESTAMP(timezone=True), default=sa.func.now()),
+)

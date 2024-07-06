@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "dio-challenge"
+name = "dio-blog"
 version = "0.1.0"
 description = ""
 authors = ["Guilherme Carvalho <gui.ifsp11@gmail.com>"]
@@ -7,14 +7,16 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-flask = "*"
-flask-sqlalchemy = "*"
-flask-migrate = "*"
-flask-marshmallow = "*"
-apispec-webframeworks = "*"
-flask-bcrypt = "*"
-marshmallow-sqlalchemy = "*"
+fastapi = "*"
+uvicorn = { extras = ["standard"], version = "*" }
+databases = { version = "*", extras = ["aiosqlite", "asyncpg"] }
+pyjwt = "*"
+psycopg2-binary = "*"
+pydantic-settings = "*"
+alembic = "*"
 
+[tool.ruff]
+line-length = 120
 
 [build-system]
 requires = ["poetry-core"]

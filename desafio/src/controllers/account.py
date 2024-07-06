@@ -1,41 +1,27 @@
-from http import HTTPStatus
+from fastapi import APIRouter, Depends, status
 
-from flask import Blueprint, request
-from marshmallow import ValidationError
-
+from src.schemas.account import AccountIn
+from src.security import login_required
 from src.services.account import AccountService
-from src.views.account import AccountSchema
+from src.services.transaction import TransactionService
+from src.views.account import AccountOut, TransactionOut
 
-app = Blueprint("account", __name__, url_prefix="/accounts")
+router = APIRouter(prefix="/accounts", dependencies=[Depends(login_required)])
+
+account_service = AccountService()
+tx_service = TransactionService()
 
 
-@app.route("/", methods=["POST"])
-def create_account():
-    """Account create view.
-    ---
-    post:
-      tags:
-        - account
-      summary: Add a new account
-      requestBody:
-        description: Create a new account in the bank
-        content:
-          application/json:
-            schema: CreateAccountSchema
-        required: true
-      responses:
-        201:
-          description: Successful operation
-          content:
-            application/json:
-              schema: AccountSchema
-    """
-    service = AccountService()
-    account_schema = AccountSchema()
+@router.get("/", response_model=list[AccountOut])
+async def read_accounts(limit: int, skip: int = 0):
+    return await account_service.read_all(limit=limit, skip=skip)
 
-    try:
-        account = service.create(account_data=request.json)
-    except ValidationError as exc:
-        return exc.messages, HTTPStatus.UNPROCESSABLE_ENTITY
 
-    return account_schema.dump(account), HTTPStatus.CREATED
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=AccountOut)
+async def create_account(account: AccountIn):
+    return await account_service.create(account)
+
+
+@router.get("/{id}/transactions", response_model=list[TransactionOut])
+async def read_account_transactions(id: int, limit: int, skip: int = 0):
+    return await tx_service.read_all(account_id=id, limit=limit, skip=skip)

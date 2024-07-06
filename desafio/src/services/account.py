@@ -1,18 +1,18 @@
-from src.models import Account, db
-from src.views.account import CreateAccountSchema
+from databases.interfaces import Record
+
+from src.database import database
+from src.models.account import accounts
+from src.schemas.account import AccountIn
 
 
 class AccountService:
-    def create(self, account_data):
-        create_account_schema = CreateAccountSchema()
-        data = create_account_schema.load(account_data)
+    async def read_all(self, limit: int, skip: int = 0) -> list[Record]:
+        query = accounts.select().limit(limit).offset(skip)
+        return await database.fetch_all(query)
 
-        account = Account(
-            agency=data["agency"],
-            account_number=data["account_number"],
-            user_id=data["user_id"],
-        )
-        db.session.add(account)
-        db.session.commit()
+    async def create(self, account: AccountIn) -> Record:
+        command = accounts.insert().values(user_id=account.user_id, balance=account.balance)
+        account_id = await database.execute(command)
 
-        return account
+        query = accounts.select().where(accounts.c.id == account_id)
+        return await database.fetch_one(query)

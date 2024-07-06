@@ -1,19 +1,11 @@
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Config:
-    TESTING = False
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", env_file_encoding="utf-8")
+
+    database_url: str
+    environment: str = "production"
 
 
-class ProductionConfig(Config):
-    pass
-
-
-class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = "sqlite:///bank.sqlite"
-
-
-class TestingConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite://"
+settings = Settings()
